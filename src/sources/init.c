@@ -15,7 +15,8 @@ void main_init(Main_obj* self){
     globals_init(self);
     settings_init(self);
     number_props_init(self);
-    themes_init(self);
+    //load_themes(self);
+    //themes_init(self);
 }
 
 void update_main_dimensions(Main_obj* self, SDL_Window* window) {
@@ -477,7 +478,7 @@ static void themes_init(Main_obj* self) {
         self->globals.themes[i] = malloc(sizeof(Theme));
     }
 
-
+/*
     self->globals.themes[selected_theme]->name = "Default";
 
     self->globals.themes[selected_theme]->background.r = 255;
@@ -549,7 +550,7 @@ static void themes_init(Main_obj* self) {
     self->globals.themes[selected_theme]->text_color.g = 222;
     self->globals.themes[selected_theme]->text_color.b = 222;
     self->globals.themes[selected_theme]->text_color.a = 255;
-    selected_theme++;
+    selected_theme++;*/
 }
 
 static void number_props_init(Main_obj* self) {

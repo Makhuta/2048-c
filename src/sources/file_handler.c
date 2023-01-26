@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "../headers/structures.h"
 #include "../headers/file_handler.h"
@@ -56,7 +58,109 @@ void load_game(Main_obj* self) {
     }
 }
 
+static bool name_is_same(const char *name1, const char *name2){
+    int buff = true;
+    if(strlen(name1) != strlen(name2)) {
+        buff = false;
+    } else {
+        if(buff) {
+            for(int i = 0; i < strlen(name1); i++) {
+                if(name1[i] != name2[i]) {
+                    buff = false;
+                }
+            }
+        }
+    }
+
+    return buff;
+}
+
+static int count_themes() {
+    int number_of_themes = 0;
+    FILE* themes_file = fopen("./src/saves/themes.csv", "rb");
+    if(!themes_file){
+        number_of_themes++;
+    } else {
+        int buff;
+        char last_name[64] = "0";
+        char name[64] = "1";
+        while(!name_is_same(name, last_name)) {
+            strcpy(last_name, name);
+
+            fscanf(themes_file, "%s %d %d %d %d %d %d %d %d %d %d %d %d", &name, &buff, &buff, &buff, &buff, &buff, &buff, &buff, &buff, &buff, &buff, &buff, &buff);
+            if(!name_is_same(name, last_name)) {
+                number_of_themes++;
+            }
+        }
+        fclose(themes_file);
+    }
+    return number_of_themes;
+}
+
+void load_themes(Main_obj* self){
+    self->globals.number_of_themes = count_themes();
+    self->globals.themes = malloc(sizeof(Theme*) * (self->globals.number_of_themes));
+    for(int i = 0; i < self->globals.number_of_themes; i++) {
+        self->globals.themes[i] = malloc(sizeof(Theme));
+    }
+
+    FILE* themes_file = fopen("./src/saves/themes.csv", "rb");
+    if(!themes_file){
+        fprintf(stderr, "Unable to open theme file.\n");
+        strcpy(self->globals.themes[self->globals.number_of_themes]->name, "Default");
+
+        self->globals.themes[self->globals.number_of_themes]->background.r = 255;
+        self->globals.themes[self->globals.number_of_themes]->background.g = 255;
+        self->globals.themes[self->globals.number_of_themes]->background.b = 204;
+        self->globals.themes[self->globals.number_of_themes]->background.a = 255;
+
+        self->globals.themes[self->globals.number_of_themes]->foreground.r = 235;
+        self->globals.themes[self->globals.number_of_themes]->foreground.g = 235;
+        self->globals.themes[self->globals.number_of_themes]->foreground.b = 184;
+        self->globals.themes[self->globals.number_of_themes]->foreground.a = 255;
+
+        self->globals.themes[self->globals.number_of_themes]->text_color.r = 235;
+        self->globals.themes[self->globals.number_of_themes]->text_color.g = 235;
+        self->globals.themes[self->globals.number_of_themes]->text_color.b = 184;
+        self->globals.themes[self->globals.number_of_themes]->text_color.a = 255;
+        self->globals.number_of_themes++;
+    } else {
+        int id = 0;
+        char last_name[64] = "0";
+        char name[64] = "1";
+        while(!name_is_same(name, last_name)) {
+            RGBA b;
+            RGBA f;
+            RGBA t;
+            strcpy(last_name, name);
+            fscanf(themes_file, "%s %d %d %d %d %d %d %d %d %d %d %d %d", &name, &b.r, &b.g, &b.b, &b.a, &f.r, &f.g, &f.b, &f.a, &t.r, &t.g, &t.b, &t.a);
+            if(!name_is_same(name, last_name)) {
+                strcpy(self->globals.themes[id]->name, name);
+
+                self->globals.themes[id]->background.r = b.r;
+                self->globals.themes[id]->background.g = b.g;
+                self->globals.themes[id]->background.b = b.b;
+                self->globals.themes[id]->background.a = b.a;
+
+                self->globals.themes[id]->foreground.r = f.r;
+                self->globals.themes[id]->foreground.g = f.g;
+                self->globals.themes[id]->foreground.b = f.b;
+                self->globals.themes[id]->foreground.a = f.a;
+
+                self->globals.themes[id]->text_color.r = t.r;
+                self->globals.themes[id]->text_color.g = t.g;
+                self->globals.themes[id]->text_color.b = t.b;
+                self->globals.themes[id]->text_color.a = t.a;
+                id++;
+            }
+        }
+        fclose(themes_file);
+    }
+}
+
+
 static void load_theme(Main_obj* self) {
+    load_themes(self);
     FILE* theme_file = fopen("./src/saves/theme.csv", "rb");
     if(!theme_file){
         fprintf(stderr, "Unable to open theme file.\n");

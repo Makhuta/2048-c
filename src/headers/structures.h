@@ -43,7 +43,7 @@ typedef struct {
 } Number_prop;
 
 typedef struct {
-    char* name;
+    char name[64];
     RGBA background;
     RGBA foreground;
     RGBA text_color;
