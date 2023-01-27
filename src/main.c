@@ -59,6 +59,7 @@ int main(int argc, char **argv) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_Event e;
     uint32_t timer_start = time(NULL);
+    uint32_t afk_timer_start = time(NULL);
 
     while (!main_obj.globals.quit) {
         Uint64 start_time = SDL_GetPerformanceCounter();
@@ -81,8 +82,10 @@ int main(int argc, char **argv) {
                 if(move_enabled(&main_obj)) {
                     switch_direction(&main_obj, e);
                 }
+                main_obj.globals.windowses.afk_window.idle_time = 0;
             } else if (e.type == SDL_MOUSEBUTTONDOWN) {
                 handle_click(&main_obj, &e);
+                main_obj.globals.windowses.afk_window.idle_time = 0;
             }
         }
 
@@ -96,7 +99,6 @@ int main(int argc, char **argv) {
             add_cell(&main_obj);
         }
 
-        SDL_SetRenderDrawColor(renderer, main_obj.globals.themes[main_obj.setting.selected_theme]->background.r, main_obj.globals.themes[main_obj.setting.selected_theme]->background.g, main_obj.globals.themes[main_obj.setting.selected_theme]->background.b, main_obj.globals.themes[main_obj.setting.selected_theme]->background.a); // Nastaven� barvy
         SDL_RenderPresent(renderer);  // Prezentace kresl�tka
 
 
@@ -108,14 +110,26 @@ int main(int argc, char **argv) {
         }
 
         uint32_t timer_end = time(NULL);
-        if(main_obj.globals.selected_window == 1 && main_obj.globals.is_playable) {
+        if(main_obj.globals.selected_window >= 1 && main_obj.globals.is_playable) {
             if(difftime(timer_end, timer_start) == 1.0) {
                 main_obj.globals.windowses.game_window.time_spend += difftime(timer_end, timer_start);
+                main_obj.globals.windowses.afk_window.idle_time++;
                 update_time(&main_obj);
                 timer_start = time(NULL);
             }
         } else {
             timer_start = time(NULL);
+        }
+
+        if(difftime(timer_end, afk_timer_start) >= 1.0 && main_obj.globals.windowses.afk_window.idle_threshold >= main_obj.globals.windowses.afk_window.idle_time) {
+            if(main_obj.globals.windowses.afk_window.idle_time == 0) {
+                main_obj.globals.windowses.afk_window.direction.x = rand() % 2 > 0 ? 1 : -1;
+                main_obj.globals.windowses.afk_window.direction.y = rand() % 2 > 0 ? 1 : -1;
+            }
+            main_obj.globals.windowses.afk_window.idle_time += difftime(timer_end, afk_timer_start);
+            afk_timer_start = time(NULL);
+        } else {
+            afk_timer_start = time(NULL);
         }
     }
     save_game(&main_obj);

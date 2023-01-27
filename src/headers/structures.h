@@ -12,6 +12,11 @@ typedef struct {
 } Dimensions;
 
 typedef struct {
+    int x;
+    int y;
+} Velocity;
+
+typedef struct {
     int r;
     int g;
     int b;
@@ -152,10 +157,24 @@ typedef struct {
 } Options;
 
 typedef struct {
+    Rounded_Rectangle_filled circle;
+    Velocity velocity;
+} Star;
+
+typedef struct {
+    int number_of_start;
+    int idle_time;
+    int idle_threshold;
+    Velocity direction;
+    Star** stars;
+} AFK_Window;
+
+typedef struct {
     Main_menu main_menu;
     Game_window game_window;
     Game_over game_over;
     Options options;
+    AFK_Window afk_window;
 } Windowses;
 
 typedef struct {

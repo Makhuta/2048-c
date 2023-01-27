@@ -286,6 +286,7 @@ static void settings_init(Main_obj* self) {
 static void init_windowses(Main_obj* self) {
     init_main_menu(self);
     init_options(self);
+    init_afk(self);
 }
 
 static void init_main_menu(Main_obj* self) {
@@ -470,87 +471,29 @@ static void init_options(Main_obj* self) {
     element_id++;
 }
 
-static void themes_init(Main_obj* self) {
-    int selected_theme = 0;
-    self->globals.number_of_themes = 4;
-    self->globals.themes = malloc(sizeof(Theme*) * self->globals.number_of_themes);
-    for(int i = 0; i < self->globals.number_of_themes; i++) {
-        self->globals.themes[i] = malloc(sizeof(Theme));
+static void init_afk(Main_obj* self){
+    self->globals.windowses.afk_window.idle_threshold = 600;
+    self->globals.windowses.afk_window.idle_time = 0;
+    self->globals.windowses.afk_window.number_of_start = rand() % 50 + 50;
+    self->globals.windowses.afk_window.direction.x = rand() % 2 > 0 ? 1 : -1;
+    self->globals.windowses.afk_window.direction.y = rand() % 2 > 0 ? 1 : -1;
+    self->globals.windowses.afk_window.stars = malloc(sizeof(Star*) * self->globals.windowses.afk_window.number_of_start);
+    for(int i = 0; i < self->globals.windowses.afk_window.number_of_start; i++){
+        self->globals.windowses.afk_window.stars[i] = malloc(sizeof(Star));
+
+        self->globals.windowses.afk_window.stars[i]->circle.rect.x = rand() % self->globals.window_dimensions.w + 1;
+        self->globals.windowses.afk_window.stars[i]->circle.rect.y = rand() % self->globals.window_dimensions.h + 1;
+        self->globals.windowses.afk_window.stars[i]->circle.rect.h = rand() % 10 + 1;
+        self->globals.windowses.afk_window.stars[i]->circle.rect.w = self->globals.windowses.afk_window.stars[i]->circle.rect.h;
+        self->globals.windowses.afk_window.stars[i]->circle.roundness = 100;
+        self->globals.windowses.afk_window.stars[i]->circle.color.r = rand() % 256;
+        self->globals.windowses.afk_window.stars[i]->circle.color.g = rand() % 256;
+        self->globals.windowses.afk_window.stars[i]->circle.color.b = rand() % 256;
+        self->globals.windowses.afk_window.stars[i]->circle.color.a = (rand() % 123 + 123) / 2;
+
+        self->globals.windowses.afk_window.stars[i]->velocity.x = rand() % 5 + 1;
+        self->globals.windowses.afk_window.stars[i]->velocity.y = rand() % 5 + 1;
     }
-
-/*
-    self->globals.themes[selected_theme]->name = "Default";
-
-    self->globals.themes[selected_theme]->background.r = 255;
-    self->globals.themes[selected_theme]->background.g = 255;
-    self->globals.themes[selected_theme]->background.b = 204;
-    self->globals.themes[selected_theme]->background.a = 255;
-
-    self->globals.themes[selected_theme]->foreground.r = 235;
-    self->globals.themes[selected_theme]->foreground.g = 235;
-    self->globals.themes[selected_theme]->foreground.b = 184;
-    self->globals.themes[selected_theme]->foreground.a = 255;
-
-    self->globals.themes[selected_theme]->text_color.r = 235;
-    self->globals.themes[selected_theme]->text_color.g = 235;
-    self->globals.themes[selected_theme]->text_color.b = 184;
-    self->globals.themes[selected_theme]->text_color.a = 255;
-    selected_theme++;
-
-
-    self->globals.themes[selected_theme]->name = "Ocean";
-
-    self->globals.themes[selected_theme]->background.r = 85;
-    self->globals.themes[selected_theme]->background.g = 206;
-    self->globals.themes[selected_theme]->background.b = 255;
-    self->globals.themes[selected_theme]->background.a = 255;
-
-    self->globals.themes[selected_theme]->foreground.r = 45;
-    self->globals.themes[selected_theme]->foreground.g = 166;
-    self->globals.themes[selected_theme]->foreground.b = 215;
-    self->globals.themes[selected_theme]->foreground.a = 255;
-
-    self->globals.themes[selected_theme]->text_color.r = 45;
-    self->globals.themes[selected_theme]->text_color.g = 166;
-    self->globals.themes[selected_theme]->text_color.b = 215;
-    self->globals.themes[selected_theme]->text_color.a = 255;
-    selected_theme++;
-
-    self->globals.themes[selected_theme]->name = "Turnip";
-
-    self->globals.themes[selected_theme]->background.r = 235;
-    self->globals.themes[selected_theme]->background.g = 150;
-    self->globals.themes[selected_theme]->background.b = 150;
-    self->globals.themes[selected_theme]->background.a = 255;
-
-    self->globals.themes[selected_theme]->foreground.r = 255;
-    self->globals.themes[selected_theme]->foreground.g = 170;
-    self->globals.themes[selected_theme]->foreground.b = 170;
-    self->globals.themes[selected_theme]->foreground.a = 255;
-
-    self->globals.themes[selected_theme]->text_color.r = 255;
-    self->globals.themes[selected_theme]->text_color.g = 170;
-    self->globals.themes[selected_theme]->text_color.b = 170;
-    self->globals.themes[selected_theme]->text_color.a = 255;
-    selected_theme++;
-
-    self->globals.themes[selected_theme]->name = "Losos";
-
-    self->globals.themes[selected_theme]->background.r = 100;
-    self->globals.themes[selected_theme]->background.g = 252;
-    self->globals.themes[selected_theme]->background.b = 252;
-    self->globals.themes[selected_theme]->background.a = 255;
-
-    self->globals.themes[selected_theme]->foreground.r = 70;
-    self->globals.themes[selected_theme]->foreground.g = 222;
-    self->globals.themes[selected_theme]->foreground.b = 222;
-    self->globals.themes[selected_theme]->foreground.a = 255;
-
-    self->globals.themes[selected_theme]->text_color.r = 70;
-    self->globals.themes[selected_theme]->text_color.g = 222;
-    self->globals.themes[selected_theme]->text_color.b = 222;
-    self->globals.themes[selected_theme]->text_color.a = 255;
-    selected_theme++;*/
 }
 
 static void number_props_init(Main_obj* self) {

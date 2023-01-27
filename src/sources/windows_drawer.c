@@ -2,6 +2,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "../headers/structures.h"
 #include "../headers/windows_drawer.h"
@@ -11,16 +12,59 @@
 #include "../headers/manipulation.h"
 
 void draw_window(Main_obj* self, SDL_Renderer* renderer, TTF_Font* sans) {
-    if(self->globals.selected_window == 0) {
-        draw_main_menu(self, renderer, sans);
-    } else if(self->globals.selected_window == 1) {
-        draw_game(self, renderer, sans);
-        update_score(self);
-        if(!self->globals.is_playable) {
-            draw_game_over(self, renderer, sans);
+    if(self->globals.windowses.afk_window.idle_threshold > self->globals.windowses.afk_window.idle_time) {
+        if(self->globals.selected_window == 0) {
+            draw_main_menu(self, renderer, sans);
+        } else if(self->globals.selected_window == 1) {
+            draw_game(self, renderer, sans);
+            update_score(self);
+            if(!self->globals.is_playable) {
+                draw_game_over(self, renderer, sans);
+            }
+        } else if(self->globals.selected_window == 2) {
+            draw_options(self, renderer, sans);
         }
-    } else if(self->globals.selected_window == 2) {
-        draw_options(self, renderer, sans);
+        SDL_SetRenderDrawColor(renderer, self->globals.themes[self->setting.selected_theme]->background.r, self->globals.themes[self->setting.selected_theme]->background.g, self->globals.themes[self->setting.selected_theme]->background.b, self->globals.themes[self->setting.selected_theme]->background.a); // Nastaven� barvy
+    } else {
+        draw_afk(self, renderer);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Nastaven� barvy
+    }
+}
+
+static void draw_afk(Main_obj* self, SDL_Renderer* renderer) {
+    SDL_Rect star_rect;
+    for(int i = 0; i < self->globals.windowses.afk_window.number_of_start; i++) {
+        star_rect.x = self->globals.windowses.afk_window.stars[i]->circle.rect.x;
+        star_rect.y = self->globals.windowses.afk_window.stars[i]->circle.rect.y;
+        star_rect.w = self->globals.windowses.afk_window.stars[i]->circle.rect.w;
+        star_rect.h = self->globals.windowses.afk_window.stars[i]->circle.rect.h;
+        
+        draw_filled_rounded_rectangle(&self->globals.windowses.afk_window.stars[i]->circle, renderer);
+        int moved_x = self->globals.windowses.afk_window.stars[i]->circle.rect.x + self->globals.windowses.afk_window.stars[i]->circle.rect.w / 2;
+        int moved_y = self->globals.windowses.afk_window.stars[i]->circle.rect.y + self->globals.windowses.afk_window.stars[i]->circle.rect.h / 2;
+        int velocity_x = self->globals.windowses.afk_window.stars[i]->velocity.x * self->globals.windowses.afk_window.direction.x;
+        int velocity_y = self->globals.windowses.afk_window.stars[i]->velocity.y * self->globals.windowses.afk_window.direction.y;
+        int trail_length_multiplier = 7;
+        SDL_SetRenderDrawColor(renderer, self->globals.windowses.afk_window.stars[i]->circle.color.r, self->globals.windowses.afk_window.stars[i]->circle.color.g, self->globals.windowses.afk_window.stars[i]->circle.color.b, self->globals.windowses.afk_window.stars[i]->circle.color.a);
+        SDL_RenderDrawLine(renderer, moved_x, moved_y, moved_x - velocity_x * trail_length_multiplier, moved_y - velocity_y * trail_length_multiplier);
+
+
+
+        if(self->globals.windowses.afk_window.stars[i]->circle.rect.x + velocity_x > self->globals.window_dimensions.w) {
+            self->globals.windowses.afk_window.stars[i]->circle.rect.x = 0;
+        } else if (self->globals.windowses.afk_window.stars[i]->circle.rect.x + velocity_x < 0) {
+            self->globals.windowses.afk_window.stars[i]->circle.rect.x = self->globals.window_dimensions.w;
+        }else {
+            self->globals.windowses.afk_window.stars[i]->circle.rect.x += velocity_x;
+        }
+
+        if(self->globals.windowses.afk_window.stars[i]->circle.rect.y + velocity_y > self->globals.window_dimensions.h) {
+            self->globals.windowses.afk_window.stars[i]->circle.rect.y = 0;
+        } else if (self->globals.windowses.afk_window.stars[i]->circle.rect.y + velocity_y < 0) {
+            self->globals.windowses.afk_window.stars[i]->circle.rect.y = self->globals.window_dimensions.h;
+        }else {
+            self->globals.windowses.afk_window.stars[i]->circle.rect.y += velocity_y;
+        }
     }
 }
 
